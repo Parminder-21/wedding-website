@@ -22,6 +22,7 @@ export default function Navbar() {
     { name: 'Gallery', href: '#gallery' },
     { name: 'Travel', href: '#travel' },
     { name: 'RSVP', href: '#rsvp' },
+    { name: 'Admin', href: '/admin' },
   ]
 
   return (

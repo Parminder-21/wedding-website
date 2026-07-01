@@ -24,6 +24,12 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
 
         <div className="h-[1px] w-24 bg-[var(--color-gold-900)] mx-auto" />
 
+        <div className="pt-2">
+          <a href="/admin" className="text-[10px] uppercase font-body tracking-wider text-[var(--color-gold-500)] hover:underline">
+            Admin Access
+          </a>
+        </div>
+
         <p className="font-body text-[10px] text-white/40 tracking-wider">
           &copy; {new Date().getFullYear()} Arjun &amp; Priya. Made with love for their wedding celebration.
         </p>
