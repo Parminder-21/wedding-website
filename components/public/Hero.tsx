@@ -17,7 +17,7 @@ export default function Hero({ settings }: { settings: SiteSettings }) {
     <section id="hero" className="relative h-screen w-full overflow-hidden bg-[var(--color-slate-900)]">
       {/* Background Image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center opacity-60 scale-105 animate-[rotateSlow_30s_linear_infinite]"
+        className="absolute inset-0 bg-cover bg-center opacity-60"
         style={{ backgroundImage: `url(${settings.heroBgImageUrl})` }}
       />
       
