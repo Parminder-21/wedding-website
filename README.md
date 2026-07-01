@@ -46,8 +46,8 @@ MONGODB_URI=your_mongodb_connection_string
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your_nextauth_secret_key
 
-ADMIN_EMAIL=admin@wedding.com
-ADMIN_PASSWORD=Admin@Wedding2024
+ADMIN_EMAIL=your_desired_admin_email
+ADMIN_PASSWORD=your_desired_secure_password
 ```
 
 ### 3. Install Dependencies
