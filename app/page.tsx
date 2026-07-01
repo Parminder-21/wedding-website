@@ -1,65 +1,103 @@
-import Image from "next/image";
+import connectDB from '@/lib/mongodb'
+import { 
+  SiteSettings, WeddingEvent, StoryMilestone, 
+  CoupleProfile, Venue, GalleryItem, TravelInfo, 
+  FaqItem, Contact 
+} from '@/lib/models'
+import Hero from '@/components/public/Hero'
+import Navbar from '@/components/public/Navbar'
+import EventsSection from '@/components/public/EventsSection'
+import StorySection from '@/components/public/StorySection'
+import CoupleSection from '@/components/public/CoupleSection'
+import VenueSection from '@/components/public/VenueSection'
+import RsvpSection from '@/components/public/RsvpSection'
+import GallerySection from '@/components/public/GallerySection'
+import TravelSection from '@/components/public/TravelSection'
+import FaqSection from '@/components/public/FaqSection'
+import ContactSection from '@/components/public/ContactSection'
+import Footer from '@/components/public/Footer'
 
-export default function Home() {
+export const revalidate = 60 // ISR every 60 seconds
+
+async function getData() {
+  try {
+    if (!process.env.MONGODB_URI) {
+      return { error: 'MONGODB_URI is not set in .env.local' }
+    }
+    
+    await connectDB()
+    const [settings, events, milestones, couple, venues, gallery, travel, faqs, contacts] = await Promise.all([
+      SiteSettings.findOne({}).lean(),
+      WeddingEvent.find({ isVisible: true }).sort({ displayOrder: 1, eventDate: 1 }).lean(),
+      StoryMilestone.find({}).sort({ displayOrder: 1 }).lean(),
+      CoupleProfile.find({}).sort({ displayOrder: 1 }).lean(),
+      Venue.find({}).sort({ displayOrder: 1 }).lean(),
+      GalleryItem.find({ isVisible: true }).sort({ displayOrder: 1 }).lean(),
+      TravelInfo.find({}).sort({ displayOrder: 1 }).lean(),
+      FaqItem.find({}).sort({ displayOrder: 1 }).lean(),
+      Contact.find({}).sort({ displayOrder: 1 }).lean(),
+    ])
+    
+    return {
+      settings: settings ? JSON.parse(JSON.stringify(settings)) : null,
+      events: events ? JSON.parse(JSON.stringify(events)) : [],
+      milestones: milestones ? JSON.parse(JSON.stringify(milestones)) : [],
+      couple: couple ? JSON.parse(JSON.stringify(couple)) : [],
+      venues: venues ? JSON.parse(JSON.stringify(venues)) : [],
+      gallery: gallery ? JSON.parse(JSON.stringify(gallery)) : [],
+      travel: travel ? JSON.parse(JSON.stringify(travel)) : [],
+      faqs: faqs ? JSON.parse(JSON.stringify(faqs)) : [],
+      contacts: contacts ? JSON.parse(JSON.stringify(contacts)) : [],
+    }
+  } catch (err: any) {
+    console.error('Error fetching data:', err)
+    return { error: err.message || 'Failed to connect to database' }
+  }
+}
+
+export default async function Home() {
+  const data = await getData()
+
+  if (data.error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-slate-900)] text-[var(--color-ivory)] p-8">
+        <div className="max-w-xl text-center">
+          <h1 className="text-3xl font-display text-[var(--color-gold-500)] mb-4">Setup Required</h1>
+          <p className="mb-4 text-red-400">{data.error}</p>
+          <p className="mb-4">Please create a `.env.local` file based on `.env.local.example` and add your MONGODB_URI.</p>
+          <p>Then run `npx tsx scripts/seed.ts` to populate the database.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const { settings, events, milestones, couple, venues, gallery, travel, faqs, contacts } = data
+
+  if (!settings) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-slate-900)] text-[var(--color-ivory)] p-8">
+        <div className="max-w-xl text-center">
+          <h1 className="text-3xl font-display text-[var(--color-gold-500)] mb-4">Database Empty</h1>
+          <p>Please run `npx tsx scripts/seed.ts` to populate the initial data.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+    <main className="min-h-screen bg-[var(--color-ivory)]">
+      <Navbar />
+      {settings.sections?.hero !== false && <Hero settings={settings} />}
+      {settings.sections?.couple !== false && <CoupleSection couple={couple} />}
+      {settings.sections?.story !== false && <StorySection milestones={milestones} />}
+      {settings.sections?.events !== false && <EventsSection events={events} />}
+      {settings.sections?.venue !== false && <VenueSection venues={venues} />}
+      {settings.sections?.rsvp !== false && <RsvpSection events={events} />}
+      {settings.sections?.gallery !== false && <GallerySection gallery={gallery} />}
+      {settings.sections?.travel !== false && <TravelSection travel={travel} />}
+      {settings.sections?.faq !== false && <FaqSection faqs={faqs} />}
+      {settings.sections?.contact !== false && <ContactSection contacts={contacts} />}
+      <Footer settings={settings} />
+    </main>
+  )
 }
